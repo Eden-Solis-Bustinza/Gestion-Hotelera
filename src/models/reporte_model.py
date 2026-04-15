@@ -5,9 +5,9 @@ class ReporteModel:
     def __init__(self):
         self.db = db
 
-    # ------------------------------------------------------------------ #
-    #  REQ-10: Reporte de ingresos financieros y ocupación                #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def get_reporte_ingresos(self, fecha_desde, fecha_hasta):
         """
         Usa la vista VW_REPORTE_BASE para obtener el detalle de facturas

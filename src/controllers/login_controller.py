@@ -7,7 +7,7 @@ from src.controllers.recupera_controller import RecuperaController
 
 class LoginController:
     def __init__(self):
-        # EL CONTROLADOR CREA LA VENTANA, NO AL REVÉS
+                                                     
         self.window = QtWidgets.QDialog()
         self.view = Ui_Dialog()
         self.view.setupUi(self.window)
@@ -33,7 +33,7 @@ class LoginController:
         user = self.user_model.get_user_by_email(email)
         
         if user and self.user_model.verify_password(password, user['password_hash']):
-            # BUG-05 FIX: actualizar ultimo_acceso
+                                                  
             self.user_model.update_last_login(user['id'])
             self.window.close()
             self.dashboard = DashboardController(user)

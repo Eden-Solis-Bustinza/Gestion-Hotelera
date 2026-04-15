@@ -8,12 +8,12 @@ from PyQt5.QtGui import QFont
 from src.models.room_model import RoomModel
 
 
-# Mapa de color según id_estado
+                               
 COLOR_MAP = {
-    1: "#16A085",  # Disponible   — Verde
-    2: "#F1948A",  # Ocupada      — Rojo
-    3: "#AED6F1",  # En Limpieza  — Azul
-    4: "#F8C471",  # Mantenimiento — Amarillo
+    1: "#16A085",                        
+    2: "#F1948A",                       
+    3: "#AED6F1",                       
+    4: "#F8C471",                            
 }
 
 
@@ -24,7 +24,7 @@ class HabitacionesController:
         self.view.setupUi(self.window)
 
         self.room_model = RoomModel()
-        self._rooms_data = []           # caché de habitaciones
+        self._rooms_data = []                                  
 
         self.window.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -41,29 +41,29 @@ class HabitacionesController:
 
         grid = self.view.gridLayout
 
-        # 1. Limpiar frames previos dejados por _crear_frame_extra
+                                                                  
         if hasattr(self, '_dynamic_frames'):
             for frame in self._dynamic_frames:
                 grid.removeWidget(frame)
                 frame.deleteLater()
         self._dynamic_frames = []
 
-        # 2. Ocultar los 3 frames hardcodeados del UI (.py)
+                                                           
         for frame_name in ["F_habitacion_1", "F_habitacion_2", "F_habitacion_3"]:
             frame = getattr(self.view, frame_name, None)
             if frame:
                 frame.hide()
         
-        # 3. Remover el F_agregar momentaneamente del grid para posicionarlo al final
+                                                                                     
         if hasattr(self.view, "F_agregar"):
             grid.removeWidget(self.view.F_agregar)
 
-        # 4. Rellenar con datos reales
+                                      
         for idx, room in enumerate(self._rooms_data):
             color = COLOR_MAP.get(room['id_estado'], "#16A085")
             self._crear_frame_extra(room, color, idx)
 
-        # 5. Recolocar el frame de "Agregar Habitación" al final de la lista
+                                                                            
         idx_agregar = len(self._rooms_data)
         if hasattr(self.view, "F_agregar"):
             self.view.F_agregar.show()
@@ -84,7 +84,7 @@ class HabitacionesController:
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(10, 10, 10, 10)
 
-        # Icono cama
+                    
         lbl_icon = QLabel()
         lbl_icon.setPixmap(
             QtGui.QPixmap("assets/icons/cama.png").scaled(65, 65, Qt.KeepAspectRatio)
@@ -93,13 +93,13 @@ class HabitacionesController:
         lbl_icon.setStyleSheet("background-color: transparent; border: none;")
         layout.addWidget(lbl_icon)
 
-        # Titulo Habitación
+                           
         lbl_titulo = QLabel(f"HABITACIÓN - {room['numero']}")
         lbl_titulo.setAlignment(Qt.AlignCenter)
         lbl_titulo.setStyleSheet("background-color: transparent; border: none; color: white; font-size: 11pt; font-weight: bold;")
         layout.addWidget(lbl_titulo)
 
-        # Tipo y estado
+                       
         for lbl_text, val in [("Tipo:", room['tipo']), ("Estado:", room['estado'])]:
             h = QHBoxLayout()
             lbl = QLabel(lbl_text)
@@ -111,7 +111,7 @@ class HabitacionesController:
             h.addWidget(le)
             layout.addLayout(h)
 
-        # Botón explicito de Cambiar Estado
+                                           
         btn_estado = QPushButton("🔄 Cambiar Estado")
         btn_estado.setStyleSheet("""
             QPushButton { 
@@ -130,16 +130,16 @@ class HabitacionesController:
         col_grid = idx % 2
         grid.addWidget(frame, row_grid, col_grid)
 
-    # ------------------------------------------------------------------ #
-    #  Conexiones de los frames existentes                                #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def setup_connections(self):
         if hasattr(self.view, 'PB_agregar_h'):
             self.view.PB_agregar_h.clicked.connect(self.abrir_dialogo_agregar)
 
-    # ------------------------------------------------------------------ #
-    #  Diálogos de edición y creación                                     #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def editar_habitacion(self, room):
         """REQ-02: Diálogo para cambiar el estado de la habitación."""
         dlg = QDialog(self.window)
@@ -160,7 +160,7 @@ class HabitacionesController:
         layout = QVBoxLayout(dlg)
         layout.setContentsMargins(20, 20, 20, 20)
 
-        # Info
+              
         lbl_info = QLabel(
             f"<b>Habitación:</b> {room['numero']}<br>"
             f"<b>Tipo:</b> {room['tipo']}<br>"
@@ -174,7 +174,7 @@ class HabitacionesController:
         sep.setStyleSheet("color: #2C3E50;")
         layout.addWidget(sep)
 
-        # Cambio de estado
+                          
         form = QFormLayout()
         cb_estado = QComboBox()
         estados = self.room_model.get_estados_habitacion()
@@ -185,7 +185,7 @@ class HabitacionesController:
         form.addRow("Nuevo estado:", cb_estado)
         layout.addLayout(form)
 
-        # Botones
+                 
         btn_layout = QHBoxLayout()
         btn_cancelar = QPushButton("Cancelar")
         btn_cancelar.setStyleSheet("background-color: #7F8C8D;")
@@ -205,7 +205,7 @@ class HabitacionesController:
         if ok:
             QMessageBox.information(dlg, "✅", "Estado actualizado correctamente.")
             dlg.accept()
-            self.load_rooms()   # Refrescar panel
+            self.load_rooms()                    
         else:
             QMessageBox.critical(dlg, "Error", "No se pudo actualizar el estado.")
 

@@ -27,7 +27,7 @@ class UserModel:
 
     def verify_password(self, password, password_hash):
         try:
-            # Si el password_hash esta guardado como string en la BD
+                                                                    
             if isinstance(password_hash, str):
                 password_hash = password_hash.encode('utf-8')
             return bcrypt.checkpw(password.encode('utf-8'), password_hash)
@@ -69,7 +69,7 @@ class UserModel:
         if conn:
             try:
                 cursor = conn.cursor()
-                # Verificar respuesta de seguridad
+                                                  
                 cursor.execute("""
                     SELECT id_usuario FROM USUARIOS 
                     WHERE email = ? AND id_pregunta = ? AND respuesta_seguridad = ?

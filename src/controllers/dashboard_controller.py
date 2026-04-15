@@ -29,18 +29,15 @@ class DashboardController:
         self.aplicar_seguridad_roles()
         self.setup_connections()
 
-        # Timer: revisar notificaciones cada 60 s y actualizar badge
+                                                                    
         self._timer_notif = QtCore.QTimer()
         self._timer_notif.timeout.connect(self._actualizar_badge_notificaciones)
         self._timer_notif.start(60_000)
-        self._actualizar_badge_notificaciones()   # primera vez al abrir
+        self._actualizar_badge_notificaciones()                         
 
     def show(self):
         self.window.show()
 
-    # ------------------------------------------------------------------ #
-    #  REQ-01: Control de acceso por rol                                  #
-    # ------------------------------------------------------------------ #
     def aplicar_seguridad_roles(self):
         """
         Roles:
@@ -53,10 +50,10 @@ class DashboardController:
 
         self.window.setWindowTitle(f"🏨 Hotel — {nombre}  [Rol: {self._nombre_rol(rol_id)}]")
 
-        if rol_id == 2:         # Recepción
+        if rol_id == 2:                    
             self.view.PB_registrar_u.hide()
             self.view.PB_reporte.hide()
-        elif rol_id == 3:       # Contabilidad
+        elif rol_id == 3:                     
             self.view.PB_habitacion.hide()
             self.view.PB_checkin.hide()
             self.view.PB_checkout.hide()
@@ -69,9 +66,6 @@ class DashboardController:
     def _nombre_rol(id_rol):
         return {1: "Administración", 2: "Recepción", 3: "Contabilidad"}.get(id_rol, "Desconocido")
 
-    # ------------------------------------------------------------------ #
-    #  Conexiones de botones                                              #
-    # ------------------------------------------------------------------ #
     def setup_connections(self):
         self.view.PB_habitacion.clicked.connect(self.show_habitaciones)
         self.view.PB_registro_h.clicked.connect(self.show_huespedes)
@@ -83,7 +77,7 @@ class DashboardController:
         self.view.PB_registrar_u.clicked.connect(self.show_registrar_usuario)
         self.view.PB_notificaciones.clicked.connect(self.show_notificaciones)
         
-        # Conectar el ícono de la persona (label_14)
+                                                    
         self.view.label_14.mousePressEvent = self.mostrar_perfil
         self.view.label_14.setCursor(QtCore.Qt.PointingHandCursor)
 
@@ -136,7 +130,7 @@ class DashboardController:
         def logout():
             dlg.accept()
             self.window.close()
-            # Resetear e ir al Login
+                                    
             self.login_window = LoginController()
             self.login_window.show()
             
@@ -145,9 +139,9 @@ class DashboardController:
         
         dlg.exec_()
 
-    # ------------------------------------------------------------------ #
-    #  Badge de notificaciones                                            #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def _actualizar_badge_notificaciones(self):
         """REQ-07: Genera notificaciones automáticas y actualiza el tooltip del botón."""
         try:
@@ -157,7 +151,7 @@ class DashboardController:
                 self.view.PB_notificaciones.setToolTip(
                     f"🔔 {total} notificación(es) hoy — haz clic para ver"
                 )
-                # Efecto visual: resaltar el botón si hay notificaciones
+                                                                        
                 self.view.PB_notificaciones.setStyleSheet(
                     "QPushButton { background-color: #E74C3C; border-radius: 5px; }"
                     "QPushButton:hover { background-color: #C0392B; }"
@@ -168,9 +162,9 @@ class DashboardController:
         except Exception as e:
             print(f"Error al actualizar badge: {e}")
 
-    # ------------------------------------------------------------------ #
-    #  Enrutamiento de módulos                                            #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def show_habitaciones(self):
         from src.views.FrmHabitaciones import Ui_Dialog
         view = Ui_Dialog()

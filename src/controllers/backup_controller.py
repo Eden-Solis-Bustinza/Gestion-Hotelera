@@ -11,10 +11,6 @@ import os
 
 
 class BackupController:
-    """
-    REQ-14: Módulo de respaldo local de SQL Server.
-    UI construida en código para no depender de un .ui nuevo.
-    """
 
     def __init__(self, user_data):
         self.user_data = user_data
@@ -54,14 +50,14 @@ class BackupController:
         main.setContentsMargins(20, 20, 20, 20)
         main.setSpacing(14)
 
-        # Título
+                
         titulo = QLabel("RESPALDO DE BASE DE DATOS — SQL Server")
         titulo.setFont(QFont("Berlin Sans FB", 15, QFont.Bold))
         titulo.setAlignment(Qt.AlignCenter)
         titulo.setStyleSheet("color: #2C3E50;")
         main.addWidget(titulo)
 
-        # GroupBox: Ejecutar backup
+                                   
         gb_nuevo = QGroupBox("Ejecutar nuevo respaldo")
         gb_lay = QHBoxLayout(gb_nuevo)
 
@@ -85,7 +81,7 @@ class BackupController:
 
         main.addWidget(gb_nuevo)
 
-        # GroupBox: Historial
+                             
         gb_hist = QGroupBox("Historial de respaldos")
         hist_lay = QVBoxLayout(gb_hist)
 
@@ -105,7 +101,7 @@ class BackupController:
 
         main.addWidget(gb_hist)
 
-        # Cerrar
+                
         btn_cerrar = QPushButton("Cerrar")
         btn_cerrar.setStyleSheet("background-color: #7F8C8D;")
         btn_cerrar.clicked.connect(self.window.close)
@@ -114,7 +110,7 @@ class BackupController:
         h.addWidget(btn_cerrar)
         main.addLayout(h)
 
-        # Cargar historial al abrir
+                                   
         self.cargar_historial()
 
     def seleccionar_carpeta(self):
@@ -184,7 +180,6 @@ class BackupController:
                         QtWidgets.QPalette.Base
                     )
                 )
-            # Colorear fila según estado
             bg = QtCore.Qt.green if reg["estado"] == "Exitoso" else (
                  QtCore.Qt.red if reg["estado"] == "Fallido" else QtCore.Qt.yellow)
             for col in range(self.tabla.columnCount()):

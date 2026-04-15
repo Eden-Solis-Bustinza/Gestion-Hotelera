@@ -9,7 +9,7 @@ class HuespedModel:
         tipos = []
         if conn:
             cursor = conn.cursor()
-            # Falla corregida: La columna real es id_tipo_documento
+                                                                   
             cursor.execute("SELECT id_tipo_documento, nombre FROM TIPO_DOCUMENTO")
             tipos = cursor.fetchall()
             conn.close()
@@ -20,8 +20,8 @@ class HuespedModel:
         if conn:
             try:
                 cursor = conn.cursor()
-                # Fallas corregidas: Se reemplazó id_tipo_doc, numero_documento, nombres, apellidos, contacto
-                # por las columnas reales de tu tabla HUESPEDES
+                                                                                                             
+                                                               
                 cursor.execute("""
                     INSERT INTO HUESPEDES (id_tipo_documento, nro_documento, nombre, apellido, telefono, email, fecha_nacimiento)
                     VALUES (?, ?, ?, ?, ?, ?, ?)

@@ -48,7 +48,7 @@ class CheckoutModel:
                     "huesped_nombres":  f"{row[5]} {row[6]}",
                     "huesped_contacto": row[7],
                     "monto_adelanto":   float(row[8]) if row[8] else 0.0,
-                    "tarifa_base":      float(row[9]) if row[9] else 0.0,  # BUG-02 FIX
+                    "tarifa_base":      float(row[9]) if row[9] else 0.0,              
                 }
         except Exception as e:
             print(f"Error al buscar reserva activa: {e}")
@@ -177,7 +177,7 @@ class CheckoutModel:
             conn.autocommit = False
             cursor = conn.cursor()
 
-            # 1. Insertar Comprobante y recuperar su ID
+                                                       
             cursor.execute("""
                 INSERT INTO COMPROBANTE
                     (id_reserva, id_habitacion, dias_estancia,
@@ -189,7 +189,7 @@ class CheckoutModel:
             row_comp = cursor.fetchone()
             id_comprobante = row_comp[0] if row_comp else None
 
-            # 2. Reserva → Completada (id=4 según schema v3)
+                                                            
             cursor.execute("""
                 SELECT TOP 1 id_estado FROM CAT_ESTADO_RESERVA
                 WHERE UPPER(nombre) COLLATE Latin1_General_CI_AI = UPPER('Completada')
@@ -204,7 +204,7 @@ class CheckoutModel:
             cursor.execute("UPDATE RESERVAS SET id_estado = ? WHERE id_reserva = ?",
                            (res[0], id_reserva))
 
-            # 3. Habitación → En Limpieza (id=3 según schema v3)
+                                                                
             cursor.execute("""
                 SELECT TOP 1 id_estado FROM CAT_ESTADO_HABITACION
                 WHERE UPPER(nombre) COLLATE Latin1_General_CI_AI = UPPER('En Limpieza')
@@ -219,7 +219,7 @@ class CheckoutModel:
             cursor.execute("UPDATE HABITACIONES SET id_estado = ? WHERE id_habitacion = ?",
                            (hab[0], id_habitacion))
 
-            # 4. Consumos extras a MOVIMIENTO_INVENTARIO
+                                                        
             if lista_extras and id_comprobante:
                 for extr in lista_extras:
                     id_prod = extr['id_producto']

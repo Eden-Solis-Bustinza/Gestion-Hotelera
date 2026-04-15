@@ -52,22 +52,22 @@ class ReporteController:
 
         self._build_ui()
 
-    # ------------------------------------------------------------------ #
-    #  Construcción de la UI                                              #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def _build_ui(self):
         main_layout = QVBoxLayout(self.window)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
 
-        # ── Título ──────────────────────────────────────────────────────
+                                                                          
         title = QLabel("REPORTE DE OCUPACIÓN E INGRESOS")
         title.setAlignment(Qt.AlignCenter)
         title.setFont(QFont("Berlin Sans FB", 16, QFont.Bold))
         title.setStyleSheet("color: #2C3E50; margin-bottom: 6px;")
         main_layout.addWidget(title)
 
-        # ── Panel de filtros ────────────────────────────────────────────
+                                                                          
         filtro_gb = QGroupBox("Filtrar por rango de fechas")
         filtro_layout = QHBoxLayout(filtro_gb)
 
@@ -90,7 +90,7 @@ class ReporteController:
         filtro_layout.addStretch()
         main_layout.addWidget(filtro_gb)
 
-        # ── Tarjetas de resumen ──────────────────────────────────────────
+                                                                           
         resumen_layout = QHBoxLayout()
         self.lbl_ventas    = self._tarjeta("Comprobantes", "0",        "#2C3E50")
         self.lbl_ingresos  = self._tarjeta("Ingresos S/.", "0.00",     "#16A085")
@@ -100,7 +100,7 @@ class ReporteController:
             resumen_layout.addWidget(frame)
         main_layout.addLayout(resumen_layout)
 
-        # ── Tabla detalle ────────────────────────────────────────────────
+                                                                           
         detalle_gb = QGroupBox("Detalle de Comprobantes")
         det_layout = QVBoxLayout(detalle_gb)
         self.tabla = QTableWidget()
@@ -117,7 +117,7 @@ class ReporteController:
         det_layout.addWidget(self.tabla)
         main_layout.addWidget(detalle_gb)
 
-        # ── Panel inferior: tipo habitación + métodos de pago ─────────
+                                                                        
         bottom_layout = QHBoxLayout()
 
         self.gb_tipo = QGroupBox("Ingresos por Tipo de Habitación")
@@ -142,7 +142,7 @@ class ReporteController:
         bottom_layout.addWidget(self.gb_metodo)
         main_layout.addLayout(bottom_layout)
 
-        # ── Cerrar ───────────────────────────────────────────────────────
+                                                                           
         btn_cerrar = QPushButton("Cerrar")
         btn_cerrar.setStyleSheet("background-color: #7F8C8D;")
         btn_cerrar.clicked.connect(self.window.close)
@@ -173,13 +173,13 @@ class ReporteController:
 
         layout.addWidget(lbl_titulo)
         layout.addWidget(lbl_valor)
-        # retornamos frame y la referencia al label del valor para actualizarlo
+                                                                               
         frame._lbl_valor = lbl_valor
         return frame
 
-    # ------------------------------------------------------------------ #
-    #  Lógica de reporte                                                  #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def generar_reporte(self):
         f_desde = self.DE_desde.date().toString("yyyy-MM-dd") + " 00:00:00"
         f_hasta = self.DE_hasta.date().toString("yyyy-MM-dd") + " 23:59:59"
@@ -188,14 +188,14 @@ class ReporteController:
             QMessageBox.warning(self.window, "Fechas", "La fecha 'Desde' debe ser anterior a 'Hasta'.")
             return
 
-        # Resumen
+                 
         resumen = self.model.get_resumen_ingresos(f_desde, f_hasta)
         self.lbl_ventas._lbl_valor.setText(str(resumen.get("cantidad", 0)))
         self.lbl_ingresos._lbl_valor.setText(f"S/. {resumen.get('total_ingresos', 0):.2f}")
         self.lbl_promedio._lbl_valor.setText(f"S/. {resumen.get('promedio', 0):.2f}")
         self.lbl_noches._lbl_valor.setText(str(resumen.get("total_noches", 0)))
 
-        # Detalle
+                 
         detalles = self.model.get_reporte_ingresos(f_desde, f_hasta)
         self.tabla.setRowCount(0)
         for row_data in detalles:
@@ -217,7 +217,7 @@ class ReporteController:
                 item.setTextAlignment(Qt.AlignCenter)
                 self.tabla.setItem(row, col, item)
 
-        # Tipo de habitación
+                            
         tipos = self.model.get_ocupacion_por_tipo(f_desde, f_hasta)
         self.tabla_tipo.setRowCount(0)
         for t in tipos:
@@ -227,7 +227,7 @@ class ReporteController:
             self.tabla_tipo.setItem(row, 1, QTableWidgetItem(str(t["cantidad"])))
             self.tabla_tipo.setItem(row, 2, QTableWidgetItem(f"S/. {t['ingresos']:.2f}"))
 
-        # Métodos de pago
+                         
         metodos = self.model.get_metodos_pago_stats(f_desde, f_hasta)
         self.tabla_metodo.setRowCount(0)
         for m in metodos:

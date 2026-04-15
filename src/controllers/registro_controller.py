@@ -26,13 +26,13 @@ class RegistroController:
         self.window.exec_()
 
     def load_combos(self):
-        # Cargar Roles
+                      
         roles = self.user_model.get_roles()
         self.view.CB_roles.clear()
         for id_rol, nombre in roles:
             self.view.CB_roles.addItem(nombre, id_rol)
 
-        # Cargar Preguntas de Seguridad
+                                       
         preguntas = self.user_model.get_preguntas_seguridad()
         self.view.CB_pregunta_s.clear()
         for id_pregunta, pregunta in preguntas:

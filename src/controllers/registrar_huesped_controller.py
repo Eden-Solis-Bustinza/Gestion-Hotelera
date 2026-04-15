@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QMessageBox
 from src.views.FrmRegistrar_huesped import Ui_Dialog
 from src.models.huesped_model import HuespedModel
 import re
-from datetime import date # Importación obligatoria para cálculos matemáticos de fechas
+from datetime import date                                                              
 
 class RegistrarHuespedController:
     def __init__(self):
@@ -21,16 +21,16 @@ class RegistrarHuespedController:
 
     def setup_ui_defaults(self):
         """Configura valores iniciales del calendario"""
-        # Forzar el formato visual a dd/mm/aa (ej. 15/04/26)
+                                                            
         self.view.DT_nacimiento.setDisplayFormat("dd/MM/yy")
         
-        # Llama a la fecha del equipo por defecto
+                                                 
         fecha_actual = QtCore.QDate.currentDate()
         self.view.DT_nacimiento.setDate(fecha_actual)
         
-        # Bloquear campo para que no se pueda modificar
+                                                       
         self.view.DT_nacimiento.setReadOnly(True)
-        # Quitar los botones para subir/bajar fecha
+                                                   
         self.view.DT_nacimiento.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
 
     def load_combos(self):
@@ -53,26 +53,26 @@ class RegistrarHuespedController:
         email = self.view.LE_correo.text().strip().lower()
         fecha_nacimiento = self.view.DT_nacimiento.date().toPyDate()
 
-        # Validación Capa 1: Campos vacíos
+                                          
         if not all([numero_doc, nombres, apellidos, contacto, email]):
             QMessageBox.warning(self.window, "Error de Validación", "Por favor, complete todos los campos obligatorios.")
             return
 
-        # Validación Capa 2: Formato de DNI (REQ-03)
+                                                    
         if tipo_doc_texto == 'DNI':
             if not numero_doc.isdigit() or len(numero_doc) != 8:
                 QMessageBox.warning(self.window, "Error de Formato", "El DNI debe contener exactamente 8 dígitos numéricos.")
                 return
 
-        # Validación Capa 3: Formato de Correo Electrónico
+                                                          
         patron_correo = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         if not re.match(patron_correo, email):
             QMessageBox.warning(self.window, "Error de Formato", "Ingrese un correo electrónico válido (ejemplo: usuario@correo.com).")
             return
         
-        # (Se eliminó la validación de edad >= 18 ya que la fecha está bloqueada a la del día del equipo)
+                                                                                                         
 
-        # Inserción en Base de Datos
+                                    
         if self.huesped_model.create_huesped(id_tipo_doc, numero_doc, nombres, apellidos, contacto, email, fecha_nacimiento):
             QMessageBox.information(self.window, "Éxito", f"Huésped {nombres} {apellidos} registrado correctamente.")
             self.window.close()

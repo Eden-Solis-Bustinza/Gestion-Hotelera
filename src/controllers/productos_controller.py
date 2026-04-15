@@ -22,25 +22,25 @@ class ProductosController:
     def show(self):
         self.window.exec_()
 
-    # ------------------------------------------------------------------ #
-    #  Setup                                                              #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def setup_ui(self):
-        # Tabla de carrito de venta
+                                   
         self.view.TW_productos.setColumnCount(3)
         self.view.TW_productos.setRowCount(0)
         self.view.TW_productos.setHorizontalHeaderLabels(["Producto", "Cantidad", "Subtotal"])
         self.view.TW_productos.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.view.TW_productos.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
 
-        # Spinbox por defecto en 1
+                                  
         self.view.SB_cantidad.setMinimum(1)
         self.view.SB_cantidad.setValue(1)
 
-        # Radio buttons — por defecto "Inmediato"
+                                                 
         self.view.RB_inmediato.setChecked(True)
 
-        # Limpiar totales
+                         
         self.view.LE_subtotal.setReadOnly(True)
         self.view.LE_igv.setReadOnly(True)
         self.view.LE_total.setReadOnly(True)
@@ -48,12 +48,12 @@ class ProductosController:
         self.view.LE_igv.setText("0.00")
         self.view.LE_total.setText("0.00")
 
-        # Inventario: LE_cantidad muestra stock actual (solo lectura)
+                                                                     
         self.view.LE_cantidad.setReadOnly(True)
         self.view.LE_cantidad.setPlaceholderText("Stock disponible")
 
     def load_datos_iniciales(self):
-        # ── Categorías para INVENTARIO (CB_categoria)
+                                                      
         categorias = self.model.get_categorias()
         self.view.CB_categoria.clear()
         self.view.CB_categoria_2.clear()
@@ -61,7 +61,7 @@ class ProductosController:
             self.view.CB_categoria.addItem(c[1], c[0])
             self.view.CB_categoria_2.addItem(c[1], c[0])
 
-        # ── Habitaciones ocupadas para el combo CB_numero_h
+                                                            
         self.view.CB_numero_h.clear()
         hab_ocupadas = self.model.get_habitaciones_ocupadas()
         if hab_ocupadas:
@@ -70,28 +70,28 @@ class ProductosController:
         else:
             self.view.CB_numero_h.addItem("Sin ocupadas")
 
-        # Cargar productos de la primera categoría
+                                                  
         if self.view.CB_categoria.count() > 0:
             self._cargar_productos(self.view.CB_categoria, self.view.CB_producto)
             self._cargar_productos(self.view.CB_categoria_2, self.view.CB_producto_v)
 
     def setup_connections(self):
-        # Inventario: al cambiar categoría → cargar productos e inventario
+                                                                          
         self.view.CB_categoria.currentIndexChanged.connect(
             lambda: self._on_categoria_inv_changed()
         )
-        # Venta: al cambiar categorías de venta
+                                               
         self.view.CB_categoria_2.currentIndexChanged.connect(
             lambda: self._cargar_productos(self.view.CB_categoria_2, self.view.CB_producto_v)
         )
 
-        # Botones
-        self.view.PB_cargar.clicked.connect(self.agregar_stock)   # Reabastecimiento
-        self.view.PB_pagar.clicked.connect(self.realizar_venta)   # Venta/consumo
+                 
+        self.view.PB_cargar.clicked.connect(self.agregar_stock)                     
+        self.view.PB_pagar.clicked.connect(self.realizar_venta)                  
 
-    # ------------------------------------------------------------------ #
-    #  Carga de combos                                                    #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def _cargar_productos(self, cb_cat, cb_prod):
         id_cat = cb_cat.currentData()
         cb_prod.clear()
@@ -112,11 +112,11 @@ class ProductosController:
         else:
             self.view.LE_cantidad.clear()
 
-    # ------------------------------------------------------------------ #
-    #  Reabastecimiento (GB_agregar_p → PB_cargar)  REQ-08               #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                          
+                                                                          
     def agregar_stock(self):
-        # Producto del panel Agregar
+                                    
         nombre_nuevo = self.view.LE_producto.text().strip()
         id_categoria = self.view.CB_categoria_2.currentData()
         cantidad_txt = self.view.LE_cantidad_2.text().strip()
@@ -127,7 +127,7 @@ class ProductosController:
 
         cantidad = int(cantidad_txt)
 
-        # Caso A: Nombre nuevo → crear producto y dar entrada
+                                                             
         if nombre_nuevo:
             if not id_categoria:
                 QMessageBox.warning(self.window, "Error", "Seleccione una categoría.")
@@ -138,18 +138,18 @@ class ProductosController:
                 QMessageBox.critical(self.window, "Error",
                                      "No se pudo crear el producto (¿nombre duplicado?).")
                 return
-            # Recargar combo y obtener id del nuevo producto
+                                                            
             self._cargar_productos(self.view.CB_categoria_2, self.view.CB_producto_v)
             QMessageBox.information(self.window, "Creado",
                                     f"Producto '{nombre_nuevo}' creado.")
             self.view.LE_producto.clear()
-            # Dar entrada de stock al recién creado
+                                                   
             prods = self.model.get_productos_by_categoria(id_categoria)
             id_prod_nuevo = next((p[0] for p in prods if p[1].lower() == nombre_nuevo.lower()), None)
             if id_prod_nuevo:
                 self.model.agregar_stock_entrada(id_prod_nuevo, cantidad, id_usuario)
         else:
-            # Caso B: Producto existente del panel inventario
+                                                             
             id_prod = self.view.CB_producto.currentData()
             if not id_prod:
                 QMessageBox.warning(self.window, "Error", "Seleccione un producto del inventario.")
@@ -165,9 +165,9 @@ class ProductosController:
 
         self.view.LE_cantidad_2.clear()
 
-    # ------------------------------------------------------------------ #
-    #  Venta / Consumo (GB_venta_p → PB_pagar)  REQ-08                  #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                         
+                                                                          
     def realizar_venta(self):
         id_prod = self.view.CB_producto_v.currentData()
         if not id_prod:
@@ -181,21 +181,21 @@ class ProductosController:
 
         id_usuario = self.user_data.get('id', 1)
 
-        # Verificar si hay habitación seleccionada
+                                                  
         hab_data = self.view.CB_numero_h.currentData()
-        id_comprobante = None  # las ventas directas no vinculan comprobante aún
+        id_comprobante = None                                                   
 
         exito, msg = self.model.registrar_venta(id_prod, cantidad, id_usuario, id_comprobante)
 
         if exito:
             nombre_prod = self.view.CB_producto_v.currentText()
 
-            # Agregar fila al carrito visual
+                                            
             row = self.view.TW_productos.rowCount()
             self.view.TW_productos.insertRow(row)
             self.view.TW_productos.setItem(row, 0, QTableWidgetItem(nombre_prod))
             self.view.TW_productos.setItem(row, 1, QTableWidgetItem(str(cantidad)))
-            self.view.TW_productos.setItem(row, 2, QTableWidgetItem("—"))  # precio sin tarifa en modelo
+            self.view.TW_productos.setItem(row, 2, QTableWidgetItem("—"))                               
 
             self._actualizar_totales_venta()
             self._actualizar_stock()
@@ -206,7 +206,7 @@ class ProductosController:
 
     def _actualizar_totales_venta(self):
         """Calcula subtotal, IGV y total del carrito."""
-        # Sin precio unitario en el modelo actual, mostramos solo conteo
+                                                                        
         filas = self.view.TW_productos.rowCount()
         self.view.LE_subtotal.setText(f"{filas} ítem(s)")
         self.view.LE_igv.setText("18% incluido")

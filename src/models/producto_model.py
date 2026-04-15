@@ -5,9 +5,9 @@ class ProductoModel:
     def __init__(self):
         self.db = db
 
-    # ------------------------------------------------------------------ #
-    #  Catálogos                                                          #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def get_categorias(self):
         conn = self.db.get_connection()
         if not conn:
@@ -43,9 +43,9 @@ class ProductoModel:
                 conn.close()
             return []
 
-    # ------------------------------------------------------------------ #
-    #  Stock disponible (saldo de entradas - salidas)                     #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def get_stock_producto(self, id_producto):
         """Calcula stock actual = SUM(entradas) - SUM(salidas)."""
         conn = self.db.get_connection()
@@ -70,9 +70,9 @@ class ProductoModel:
                 conn.close()
             return 0
 
-    # ------------------------------------------------------------------ #
-    #  Habitaciones ocupadas (para el combo "Nro. Habitación")            #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def get_habitaciones_ocupadas(self):
         """Devuelve habitaciones con estado 'Ocupada' para cargar consumos."""
         conn = self.db.get_connection()
@@ -93,23 +93,23 @@ class ProductoModel:
             """)
             rows = cursor.fetchall()
             conn.close()
-            return rows  # (id_habitacion, numero, id_reserva)
+            return rows                                       
         except Exception as e:
             print(f"Error al obtener habitaciones ocupadas: {e}")
             if conn:
                 conn.close()
             return []
 
-    # ------------------------------------------------------------------ #
-    #  Movimientos                                                        #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def agregar_stock_entrada(self, id_producto, cantidad, id_usuario):
         """REQ-08: Reabastecimiento → movimiento 'entrada'."""
         return self._crear_movimiento(id_producto, cantidad, "entrada", id_usuario, None)
 
     def registrar_venta(self, id_producto, cantidad, id_usuario, id_comprobante=None):
         """REQ-08: Venta/consumo → movimiento 'salida'."""
-        # Verificar stock disponible
+                                    
         stock = self.get_stock_producto(id_producto)
         if stock < cantidad:
             return False, f"Stock insuficiente. Disponible: {stock}"

@@ -34,7 +34,7 @@ class ReservaModel:
         if conn:
             try:
                 cursor = conn.cursor()
-                # Usamos la función nativa que se creó en hotel_schema_v3
+                                                                         
                 cursor.execute("""
                     SELECT h.id_habitacion, h.numero, t.nombre as tipo, t.tarifa_base
                     FROM dbo.FN_HabitacionesDisponibles(?, ?) f
@@ -69,19 +69,19 @@ class ReservaModel:
             conn.autocommit = False 
             cursor = conn.cursor()
 
-            # ID de estado Confirmada (2) o Pendiente (1). Al crear desde front suele ser pendiente o confirmada. 
+                                                                                                                  
             cursor.execute("SELECT id_estado FROM CAT_ESTADO_RESERVA WHERE nombre = ?", ('Pendiente',))
             res_estado = cursor.fetchone()
             id_estado_reserva = res_estado[0] if res_estado else 1
 
-            # Inserción de la reserva
+                                     
             cursor.execute("""
                 INSERT INTO RESERVAS (id_huesped, id_habitacion, fecha_checkin, fecha_checkout, id_estado, nro_huespedes, monto_adelantado, id_usuario_crea)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (id_huesped, id_habitacion, fecha_in, fecha_out, id_estado_reserva, num_huespedes, monto, id_usuario))
 
-            # Actualizamos también estadísticamente si es necesario, pero como entra a Pendiente, no ocupa la hab ahora mismo (Ocupada=2).
-            # Disponibilidad filtra por fechas, por lo que la habitación no requiere cambiar status inmediato si es a futuro.
+                                                                                                                                          
+                                                                                                                             
             
             conn.commit()
             return True

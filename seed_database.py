@@ -18,7 +18,7 @@ def seed_database():
         conn.autocommit = False
         cursor = conn.cursor()
         
-        # 1. Verificar y poblar ROLES
+                                     
         cursor.execute("SELECT COUNT(*) FROM CAT_ROL")
         if cursor.fetchone()[0] == 0:
             print("🌱 Poblando tabla de Roles (CAT_ROL)...")
@@ -26,7 +26,7 @@ def seed_database():
             for rol in roles:
                 cursor.execute("INSERT INTO CAT_ROL (nombre) VALUES (?)", (rol,))
 
-        # 2. Verificar y poblar CAT_ESTADO_HABITACION
+                                                     
         cursor.execute("SELECT COUNT(*) FROM CAT_ESTADO_HABITACION")
         if cursor.fetchone()[0] == 0:
             print("🌱 Poblando Estados de Habitación...")
@@ -34,7 +34,7 @@ def seed_database():
             for est in estados:
                 cursor.execute("INSERT INTO CAT_ESTADO_HABITACION (nombre) VALUES (?)", (est,))
 
-        # 3. Verificar y poblar CAT_ESTADO_RESERVA
+                                                  
         cursor.execute("SELECT COUNT(*) FROM CAT_ESTADO_RESERVA")
         if cursor.fetchone()[0] == 0:
             print("🌱 Poblando Estados de Reserva...")
@@ -42,7 +42,7 @@ def seed_database():
             for est in estados_res:
                 cursor.execute("INSERT INTO CAT_ESTADO_RESERVA (nombre) VALUES (?)", (est,))
 
-        # 4. Verificar y poblar TIPO_DOCUMENTO
+                                              
         cursor.execute("SELECT COUNT(*) FROM TIPO_DOCUMENTO")
         if cursor.fetchone()[0] == 0:
             print("🌱 Poblando Tipos de Documento...")
@@ -50,7 +50,7 @@ def seed_database():
             for doc in docs:
                 cursor.execute("INSERT INTO TIPO_DOCUMENTO (nombre) VALUES (?)", (doc,))
 
-        # 5. Verificar e inicializar PREGUNTAS_SEGURIDAD
+                                                        
         cursor.execute("SELECT COUNT(*) FROM SEGURIDAD_PREGUNTAS")
         if cursor.fetchone()[0] == 0:
             print("🌱 Poblando Preguntas Secretas...")
@@ -61,19 +61,19 @@ def seed_database():
             for preg in preguntas:
                 cursor.execute("INSERT INTO SEGURIDAD_PREGUNTAS (pregunta) VALUES (?)", (preg,))
 
-        # 6. Crear un usuario ADMINISTRADOR por defecto si no hay usuarios
+                                                                          
         cursor.execute("SELECT COUNT(*) FROM USUARIOS")
         if cursor.fetchone()[0] == 0:
             print("🌱 Creando usuario Administrador inicial...")
-            # Contraseña por defecto: "admin123"
+                                                
             hash_pass = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            # Suponemos que el ROL Administración tiene ID 1 y pregunta 1
+                                                                         
             cursor.execute("""
                 INSERT INTO USUARIOS (nombre, email, password_hash, id_rol, id_pregunta, respuesta_seguridad)
                 VALUES ('Administrador Global', 'admin@hotel.com', ?, 1, 1, 'admin')
             """, (hash_pass,))
 
-        # 7. CATEGORIA y PRODUCTOS (Mejorado con precios por defecto)
+                                                                     
         cursor.execute("SELECT COUNT(*) FROM CATEGORIA")
         if cursor.fetchone()[0] == 0:
             print("🌱 Insertando categorías de inventario...")
@@ -83,7 +83,7 @@ def seed_database():
         cursor.execute("SELECT COUNT(*) FROM PRODUCTO")
         if cursor.fetchone()[0] == 0:
             print("🌱 Inyectando catálogo base de Productos Valorado...")
-            # Obtener los ids de las categorias creadas
+                                                       
             cursor.execute("SELECT id, nombre FROM CATEGORIA")
             categorias_map = {row[1]: row[0] for row in cursor.fetchall()}
             
@@ -99,10 +99,10 @@ def seed_database():
                     cursor.execute("INSERT INTO PRODUCTO (categoria_id, nombre, precio) VALUES (?, ?, ?)", 
                                    (cat_id, prod_name, prod_precio))
                 except Exception as e:
-                    # Ignorar si el esquema de bd aún no soporta precio (por ser versión vieja) temporalmente
+                                                                                                             
                     pass
                     
-        # 8. TIPO_HABITACION Y HABITACIONES 
+                                            
         cursor.execute("SELECT COUNT(*) FROM TIPO_HABITACION")
         if cursor.fetchone()[0] == 0:
             print("🌱 Generando tipos de habitación standard...")
@@ -120,7 +120,7 @@ def seed_database():
                 ('201', tipos.get('Doble', 2)), ('202', tipos.get('Doble', 2))
             ]
             for num, tipo_id in habitaciones_mock:
-                 # Empezaran Disponibles (Estado 1)
+                                                   
                  cursor.execute("INSERT INTO HABITACIONES (numero, id_tipo, id_estado) VALUES (?, ?, 1)", (num, tipo_id))
 
         conn.commit()

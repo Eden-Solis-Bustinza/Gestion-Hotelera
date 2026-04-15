@@ -8,9 +8,9 @@ class BackupModel:
     def __init__(self):
         self.db = db
 
-    # ------------------------------------------------------------------ #
-    #  REQ-14: Backup de la base de datos SQL Server                      #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def ejecutar_backup(self, ruta_destino, id_usuario):
         """
         Ejecuta BACKUP DATABASE HotelDB TO DISK vía pyodbc y registra
@@ -25,15 +25,15 @@ class BackupModel:
         if not conn:
             return False, "Sin conexión a la base de datos."
 
-        # Estado inicial: En Proceso (3)
+                                        
         id_estado = 3
         id_backup = None
 
         try:
-            conn.autocommit = True          # BACKUP no acepta transacciones explícitas
+            conn.autocommit = True                                                     
             cursor = conn.cursor()
 
-            # Registrar inicio
+                              
             cursor.execute("""
                 INSERT INTO BACKUPS (ruta_archivo, id_estado, observaciones, id_usuario)
                 OUTPUT INSERTED.id_backup
@@ -42,7 +42,7 @@ class BackupModel:
             row = cursor.fetchone()
             id_backup = row[0] if row else None
 
-            # Realizar el backup
+                                
             cursor.execute(f"""
                 BACKUP DATABASE HotelDB
                 TO DISK = N'{ruta_completa}'
@@ -50,7 +50,7 @@ class BackupModel:
                      NAME = 'Backup completo HotelDB'
             """)
 
-            # Actualizar a Exitoso (1)
+                                      
             if id_backup:
                 cursor.execute("""
                     UPDATE BACKUPS SET id_estado = 1,
@@ -62,7 +62,7 @@ class BackupModel:
             return True, ruta_completa
 
         except Exception as e:
-            # Actualizar a Fallido (2)
+                                      
             try:
                 if id_backup:
                     cursor.execute("""

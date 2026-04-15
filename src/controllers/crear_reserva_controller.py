@@ -55,14 +55,11 @@ class CrearReservaController:
         self.view.PB_crear.clicked.connect(self.crear_reserva)
         self.view.PB_salir.clicked.connect(self.window.close)
 
-        # Botón de gestión (modificar/cancelar) — reutilizamos el label de id_r como botón
-        # pero si la vista tiene un botón extra lo conectamos
+                                                                                          
+                                                             
         if hasattr(self.view, 'PB_gestionar'):
             self.view.PB_gestionar.clicked.connect(self.abrir_gestion_reservas)
 
-    # ------------------------------------------------------------------ #
-    #  Búsqueda de huésped                                                #
-    # ------------------------------------------------------------------ #
     def buscar_huesped(self):
         dni = self.view.LE_numero_d.text().strip()
         if not dni:
@@ -82,9 +79,6 @@ class CrearReservaController:
             QMessageBox.warning(self.window, "No encontrado",
                                 "Huésped no existe. Regístrelo primero.")
 
-    # ------------------------------------------------------------------ #
-    #  Validar disponibilidad                                             #
-    # ------------------------------------------------------------------ #
     def validar_disponibilidad(self):
         f_in  = self.view.DT_fyh_ingreso.dateTime().toString("yyyy-MM-dd HH:mm:ss")
         f_out = self.view.DT_fyh_salida.dateTime().toString("yyyy-MM-dd HH:mm:ss")
@@ -114,9 +108,6 @@ class CrearReservaController:
         QMessageBox.information(self.window, "Disponible",
                                 f"Se encontraron {len(habs)} habitación(es) disponible(s).")
 
-    # ------------------------------------------------------------------ #
-    #  Crear reserva                                                      #
-    # ------------------------------------------------------------------ #
     def crear_reserva(self):
         if not self.id_huesped_actual:
             QMessageBox.warning(self.window, "Error", "Busque un huésped primero.")
@@ -142,7 +133,7 @@ class CrearReservaController:
         exito = self.model.crear_reserva(
             self.id_huesped_actual, id_hab, num_huespedes,
             f_in, f_out, monto_float,
-            self.user_data.get('id', 1)   # BUG-01 FIX: 'id' es el id_usuario real
+            self.user_data.get('id', 1)                                           
         )
 
         if exito:
@@ -153,9 +144,6 @@ class CrearReservaController:
             QMessageBox.critical(self.window, "❌ Error",
                                  "No se pudo crear la reserva. Verifique disponibilidad.")
 
-    # ------------------------------------------------------------------ #
-    #  REQ-05: Gestión de reservas (modificar / cancelar)                #
-    # ------------------------------------------------------------------ #
     def abrir_gestion_reservas(self):
         """Abre un diálogo con la lista de reservas activas para gestionar."""
         reservas = self.model.get_reservas_activas()
@@ -220,7 +208,7 @@ class CrearReservaController:
                 item = QTableWidgetItem(v)
                 item.setTextAlignment(Qt.AlignCenter)
                 tabla.setItem(row, col, item)
-            # Color según estado
+                                
             color = "#D5F5E3" if res['estado'] == "Confirmada" else "#FEF9E7"
             for col in range(tabla.columnCount()):
                 if tabla.item(row, col):
@@ -228,7 +216,6 @@ class CrearReservaController:
 
         lay.addWidget(tabla)
 
-        # Botones de acción
         btn_row = QHBoxLayout()
 
         btn_cancelar_res = QPushButton("🚫  Cancelar Reserva")
@@ -289,7 +276,6 @@ class CrearReservaController:
         if not res:
             return
 
-        # Sub-diálogo de modificación
         mod_dlg = QDialog(dlg)
         mod_dlg.setWindowTitle(f"Modificar Reserva #{id_reserva}")
         mod_dlg.setMinimumSize(420, 320)

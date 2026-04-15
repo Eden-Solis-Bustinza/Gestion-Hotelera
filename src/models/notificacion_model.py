@@ -6,9 +6,9 @@ class NotificacionModel:
     def __init__(self):
         self.db = db
 
-    # ------------------------------------------------------------------ #
-    #  Generación automática de notificaciones en BD                      #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def generar_notificaciones(self):
         """
         REQ-07: Genera (INSERT) notificaciones en la tabla NOTIFICACIONES
@@ -23,7 +23,7 @@ class NotificacionModel:
             conn.autocommit = False
             cursor = conn.cursor()
 
-            # 1. Reservas que vencen en las próximas 24 horas (CheckoutProximo)
+                                                                               
             cursor.execute("""
                 SELECT r.id_reserva,
                        hu.nombre + ' ' + hu.apellido AS huesped,
@@ -53,7 +53,7 @@ class NotificacionModel:
                       )
                 """, (msg, msg))
 
-            # 2. Reservas que inician en las próximas 2 horas (ReservaProxima)
+                                                                              
             cursor.execute("""
                 SELECT r.id_reserva,
                        hu.nombre + ' ' + hu.apellido AS huesped,
@@ -83,7 +83,7 @@ class NotificacionModel:
                       )
                 """, (msg, msg))
 
-            # 3. Habitaciones en limpieza (HabitacionLimpia)
+                                                            
             cursor.execute("""
                 SELECT h.id_habitacion, h.numero
                 FROM HABITACIONES h
@@ -115,9 +115,9 @@ class NotificacionModel:
             conn.autocommit = True
             conn.close()
 
-    # ------------------------------------------------------------------ #
-    #  Lectura de las últimas notificaciones                              #
-    # ------------------------------------------------------------------ #
+                                                                          
+                                                                           
+                                                                          
     def get_notificaciones(self, limit=50):
         """Devuelve las últimas N notificaciones ordenadas por fecha desc."""
         conn = self.db.get_connection()
