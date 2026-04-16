@@ -39,7 +39,7 @@ class CheckoutModel:
             row = cursor.fetchone()
             conn.close()
             if row:
-                return {
+                reserva_dict = {
                     "id_reserva":       row[0],
                     "id_habitacion":    row[1],
                     "num_habitacion":   row[2],
@@ -50,6 +50,20 @@ class CheckoutModel:
                     "monto_adelanto":   float(row[8]) if row[8] else 0.0,
                     "tarifa_base":      float(row[9]) if row[9] else 0.0,              
                 }
+                
+                cursor.execute("""
+                    SELECT c.id_producto, p.nombre, c.cantidad, c.precio_unitario, c.subtotal
+                    FROM CONSUMO_RESERVA c
+                    JOIN PRODUCTO p ON c.id_producto = p.id
+                    WHERE c.id_reserva = ?
+                """, (row[0],))
+                
+                reserva_dict["consumos"] = [
+                    {"id_producto": c[0], "nombre": c[1], "cantidad": c[2], "precio": c[3], "subtotal": c[4]}
+                    for c in cursor.fetchall()
+                ]
+                
+                return reserva_dict
         except Exception as e:
             print(f"Error al buscar reserva activa: {e}")
             if conn:
@@ -125,7 +139,8 @@ class CheckoutModel:
                     h.numero          AS habitacion,
                     th.nombre         AS tipo_hab,
                     hu.nombre + ' ' + hu.apellido AS huesped,
-                    hu.nro_documento
+                    hu.nro_documento,
+                    c.id_reserva
                 FROM COMPROBANTE c
                 JOIN RESERVAS r      ON c.id_reserva    = r.id_reserva
                 JOIN HABITACIONES h  ON c.id_habitacion = h.id_habitacion
@@ -137,7 +152,7 @@ class CheckoutModel:
             row = cursor.fetchone()
             conn.close()
             if row:
-                return {
+                comprobante_dict = {
                     "numero_comprobante": row[0],
                     "dias_estancia":      row[1],
                     "subtotal":           float(row[2]),
@@ -148,7 +163,22 @@ class CheckoutModel:
                     "tipo_hab":           row[7],
                     "huesped":            row[8],
                     "nro_documento":      row[9],
+                    "id_reserva":         row[10],
                 }
+
+                cursor.execute("""
+                    SELECT p.nombre, c.cantidad, c.subtotal
+                    FROM CONSUMO_RESERVA c
+                    JOIN PRODUCTO p ON c.id_producto = p.id
+                    WHERE c.id_reserva = ?
+                """, (row[10],))
+                
+                comprobante_dict["productos_detalle"] = [
+                    {"nombre": c[0], "cantidad": c[1], "subtotal": float(c[2])}
+                    for c in cursor.fetchall()
+                ]
+                
+                return comprobante_dict
         except Exception as e:
             print(f"Error al obtener comprobante: {e}")
             if conn:
@@ -224,11 +254,22 @@ class CheckoutModel:
                 for extr in lista_extras:
                     id_prod = extr['id_producto']
                     cant = extr['cantidad']
+                    subtotal_ext = extr['subtotal']
+                    precio_uni = subtotal_ext / cant if cant > 0 else 0
+                    
                     cursor.execute("""
                         INSERT INTO MOVIMIENTO_INVENTARIO 
                         (producto_id, cantidad, tipo, id_comprobante, id_usuario)
                         VALUES (?, ?, 'salida', ?, ?)
                     """, (id_prod, cant, id_comprobante, id_usuario))
+                    
+                    # Insert in CONSUMO_RESERVA if not already from reservation
+                    cursor.execute("SELECT 1 FROM CONSUMO_RESERVA WHERE id_reserva = ? AND id_producto = ? AND subtotal = ?", (id_reserva, id_prod, subtotal_ext))
+                    if not cursor.fetchone():
+                        cursor.execute("""
+                            INSERT INTO CONSUMO_RESERVA (id_reserva, id_producto, cantidad, precio_unitario, subtotal)
+                            VALUES (?, ?, ?, ?, ?)
+                        """, (id_reserva, id_prod, cant, precio_uni, subtotal_ext))
 
             conn.commit()
             return True, id_comprobante

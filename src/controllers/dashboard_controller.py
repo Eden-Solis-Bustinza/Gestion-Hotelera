@@ -82,25 +82,41 @@ class DashboardController:
         self.view.label_14.setCursor(QtCore.Qt.PointingHandCursor)
 
     def mostrar_perfil(self, event):
-        from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
-        from PyQt5.QtGui import QFont
+        from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QWidget, QLineEdit, QComboBox, QFormLayout
+        from PyQt5.QtGui import QFont, QColor
+        from PyQt5.QtCore import Qt
         from src.controllers.login_controller import LoginController
+        from src.models.user_model import UserModel
+        
+        is_admin = self.user_data.get('id_rol', 1) == 1
+        user_model = UserModel()
         
         dlg = QDialog(self.window)
         dlg.setWindowTitle("👤 Perfil de Usuario")
-        dlg.setFixedSize(320, 240)
+        
+        if is_admin:
+            dlg.setFixedSize(900, 450)
+            main_layout = QHBoxLayout(dlg)
+            col_perfil = QVBoxLayout()
+            col_admin = QVBoxLayout()
+            main_layout.addLayout(col_perfil, 1)
+            main_layout.addLayout(col_admin, 3)
+        else:
+            dlg.setFixedSize(320, 240)
+            col_perfil = QVBoxLayout(dlg)
+            
         dlg.setStyleSheet("""
             QDialog { background-color: #F8F9F9; }
             QLabel { color: #2C3E50; }
+            QTableWidget { font-family: 'Segoe UI'; background: white; }
+            QHeaderView::section { background-color: #2C3E50; color: white; font-weight: bold; padding: 4px; }
         """)
         
-        layout = QVBoxLayout(dlg)
-        layout.setSpacing(15)
-        
+        col_perfil.setSpacing(15)
         lbl_titulo = QLabel("TU CUENTA")
         lbl_titulo.setFont(QFont("Berlin Sans FB", 14, QFont.Bold))
-        lbl_titulo.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(lbl_titulo)
+        lbl_titulo.setAlignment(Qt.AlignCenter)
+        col_perfil.addWidget(lbl_titulo)
         
         nombre = self.user_data.get('nombre', 'Administrador')
         email = self.user_data.get('email', 'admin@hotel.com')
@@ -109,16 +125,15 @@ class DashboardController:
         def _add_fila(texto):
             lbl = QLabel(texto)
             lbl.setFont(QFont("Segoe UI", 11))
-            layout.addWidget(lbl)
+            col_perfil.addWidget(lbl)
             
         _add_fila(f"<b>Nombre:</b> {nombre}")
         _add_fila(f"<b>Usuario:</b> {email}")
         _add_fila(f"<b>Rol Nivel:</b> {rol}")
-        
-        layout.addStretch()
+        col_perfil.addStretch()
         
         btn_logout = QPushButton("CERRAR SESIÓN")
-        btn_logout.setCursor(QtCore.Qt.PointingHandCursor)
+        btn_logout.setCursor(Qt.PointingHandCursor)
         btn_logout.setStyleSheet("""
             QPushButton {
                 background-color: #E74C3C; color: white; font-weight: bold; 
@@ -130,13 +145,131 @@ class DashboardController:
         def logout():
             dlg.accept()
             self.window.close()
-                                    
             self.login_window = LoginController()
             self.login_window.show()
             
         btn_logout.clicked.connect(logout)
-        layout.addWidget(btn_logout)
+        col_perfil.addWidget(btn_logout)
         
+        if is_admin:
+            lbl_admin = QLabel("GESTIÓN DE USUARIOS")
+            lbl_admin.setFont(QFont("Berlin Sans FB", 14, QFont.Bold))
+            col_admin.addWidget(lbl_admin)
+            
+            tb_users = QTableWidget()
+            tb_users.setColumnCount(6)
+            tb_users.setHorizontalHeaderLabels(["ID", "Nombre", "Email", "Rol", "Estado", "Acción"])
+            tb_users.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+            tb_users.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+            tb_users.setEditTriggers(QTableWidget.NoEditTriggers)
+            tb_users.setSelectionBehavior(QTableWidget.SelectRows)
+            col_admin.addWidget(tb_users)
+            
+            def refrescar_tabla():
+                tb_users.setRowCount(0)
+                usuarios = user_model.get_all_users()
+                for usr in usuarios:
+                    row = tb_users.rowCount()
+                    tb_users.insertRow(row)
+                    
+                    id_item = QTableWidgetItem(str(usr['id']))
+                    id_item.setTextAlignment(Qt.AlignCenter)
+                    nom_item = QTableWidgetItem(usr['nombre'])
+                    mail_item = QTableWidgetItem(usr['email'])
+                    rol_item = QTableWidgetItem(usr['rol'])
+                    
+                    estado_str = "Activo" if usr['activo'] else "Inactivo"
+                    est_item = QTableWidgetItem(estado_str)
+                    est_item.setTextAlignment(Qt.AlignCenter)
+                    
+                    if not usr['activo']:
+                        rojo = QColor("#FADBD8")
+                        for it in (id_item, nom_item, mail_item, rol_item, est_item):
+                            it.setBackground(rojo)
+                            
+                    tb_users.setItem(row, 0, id_item)
+                    tb_users.setItem(row, 1, nom_item)
+                    tb_users.setItem(row, 2, mail_item)
+                    tb_users.setItem(row, 3, rol_item)
+                    tb_users.setItem(row, 4, est_item)
+                    
+                    w_acciones = QWidget()
+                    l_acciones = QHBoxLayout(w_acciones)
+                    l_acciones.setContentsMargins(0, 0, 0, 0)
+                    
+                    btn_edit = QPushButton("✏️")
+                    btn_edit.setToolTip("Editar usuario")
+                    btn_edit.setCursor(Qt.PointingHandCursor)
+                    btn_edit.clicked.connect(lambda _, u=usr: abrir_editar(u))
+                    
+                    btn_toggle = QPushButton("🔴" if usr['activo'] else "🟢")
+                    btn_toggle.setToolTip("Desactivar" if usr['activo'] else "Activar")
+                    btn_toggle.setCursor(Qt.PointingHandCursor)
+                    btn_toggle.clicked.connect(lambda _, u=usr: toggle_estado(u))
+                    
+                    if usr['id'] == self.user_data.get('id'):
+                        btn_toggle.setEnabled(False)
+                        btn_toggle.setToolTip("No puedes desactivarte a ti mismo")
+                        
+                    l_acciones.addWidget(btn_edit)
+                    l_acciones.addWidget(btn_toggle)
+                    tb_users.setCellWidget(row, 5, w_acciones)
+                    
+            def toggle_estado(usr):
+                nuevo = not usr['activo']
+                if user_model.toggle_user_status(usr['id'], nuevo):
+                    refrescar_tabla()
+            
+            def abrir_editar(usr):
+                mod_dlg = QDialog(dlg)
+                mod_dlg.setWindowTitle(f"Editar Usuario #{usr['id']}")
+                mod_dlg.setFixedSize(350, 250)
+                flay = QFormLayout(mod_dlg)
+                
+                le_nom = QLineEdit(usr['nombre'])
+                le_email = QLineEdit(usr['email'])
+                
+                cb_rol = QComboBox()
+                roles = user_model.get_roles()
+                for r in roles:
+                    cb_rol.addItem(r[1], r[0])
+                idx = cb_rol.findData(usr['id_rol'])
+                if idx >= 0: cb_rol.setCurrentIndex(idx)
+                
+                le_pass = QLineEdit()
+                le_pass.setPlaceholderText("Dejar en blanco para no cambiar")
+                le_pass.setEchoMode(QLineEdit.Password)
+                
+                flay.addRow("Nombre:", le_nom)
+                flay.addRow("Email:", le_email)
+                flay.addRow("Rol:", cb_rol)
+                flay.addRow("Nueva Contraseña:", le_pass)
+                
+                btn_box = QHBoxLayout()
+                btn_save = QPushButton("Guardar")
+                btn_save.clicked.connect(lambda: guardar_cambios(usr['id'], le_nom.text(), le_email.text(), cb_rol.currentData(), le_pass.text(), mod_dlg))
+                btn_cancel = QPushButton("Cancelar")
+                btn_cancel.clicked.connect(mod_dlg.reject)
+                btn_box.addWidget(btn_cancel)
+                btn_box.addWidget(btn_save)
+                
+                flay.addRow(btn_box)
+                mod_dlg.exec_()
+                
+            def guardar_cambios(id_u, n, e, id_r, p, mdlg):
+                from PyQt5.QtWidgets import QMessageBox
+                if not n.strip() or not e.strip():
+                    QMessageBox.warning(mdlg, "Error", "Nombre y correo son requeridos.")
+                    return
+                if user_model.update_user_details_admin(id_u, n, e, id_r, p if p else None):
+                    QMessageBox.information(mdlg, "Éxito", "Usuario actualizado.")
+                    mdlg.accept()
+                    refrescar_tabla()
+                else:
+                    QMessageBox.critical(mdlg, "Error", "No se pudo actualizar.")
+                    
+            refrescar_tabla()
+            
         dlg.exec_()
 
                                                                           

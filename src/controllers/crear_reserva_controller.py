@@ -10,6 +10,8 @@ from PyQt5.QtGui import QFont
 from src.views.FrmCrear_reserva import Ui_Dialog
 from src.models.reserva_model import ReservaModel
 from datetime import datetime
+import random
+import string
 
 
 class CrearReservaController:
@@ -22,6 +24,7 @@ class CrearReservaController:
         self.model = ReservaModel()
 
         self.id_huesped_actual = None
+        self.lista_extras = []
 
         self.window.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -49,13 +52,18 @@ class CrearReservaController:
         for id_m, nombre in metodos:
             self.view.CB_medio_p.addItem(nombre, id_m)
 
+        productos = self.model.get_productos()
+        self.view.CB_producto.clear()
+        for id_p, nombre, precio in productos:
+            self.view.CB_producto.addItem(f"{nombre} (S/.{float(precio):.2f})", {'id': id_p, 'precio': float(precio), 'nombre': nombre})
+
     def setup_connections(self):
         self.view.PB_buscar.clicked.connect(self.buscar_huesped)
         self.view.PB_validar.clicked.connect(self.validar_disponibilidad)
         self.view.PB_crear.clicked.connect(self.crear_reserva)
+        if hasattr(self.view, 'PB_cargar_2'):
+            self.view.PB_cargar_2.clicked.connect(self.agregar_extra)
         self.view.PB_salir.clicked.connect(self.window.close)
-
-                                                                                          
                                                              
         if hasattr(self.view, 'PB_gestionar'):
             self.view.PB_gestionar.clicked.connect(self.abrir_gestion_reservas)
@@ -72,10 +80,18 @@ class CrearReservaController:
             self.view.LE_nombres_apellidos.setText(h['nombres'])
             self.view.LE_contacto.setText(h['contacto'] or "")
             self.view.LE_correo.setText(h['email'] or "")
+            
+            # Generar código único R + DNI + 3 letras aleatorias
+            letras = ''.join(random.choices(string.ascii_uppercase, k=3))
+            codigo_reserva = f"R{dni}{letras}"
+            self.view.LE_id_r.setText(codigo_reserva)
+            self.view.LE_id_r.setReadOnly(True)
+            
             QMessageBox.information(self.window, "✅ Éxito", "Huésped encontrado.")
         else:
             self.id_huesped_actual = None
             self.view.LE_nombres_apellidos.clear()
+            self.view.LE_id_r.clear()
             QMessageBox.warning(self.window, "No encontrado",
                                 "Huésped no existe. Regístrelo primero.")
 
@@ -108,6 +124,46 @@ class CrearReservaController:
         QMessageBox.information(self.window, "Disponible",
                                 f"Se encontraron {len(habs)} habitación(es) disponible(s).")
 
+    def agregar_extra(self):
+        data_prod = self.view.CB_producto.currentData()
+        if not data_prod:
+            QMessageBox.warning(self.window, "Atención", "Seleccione un producto.")
+            return
+            
+        cantidad = self.view.SB_cantidad.value()
+        if cantidad <= 0:
+            QMessageBox.warning(self.window, "Atención", "Seleccione una cantidad mayor a 0.")
+            return
+            
+        subtotal = data_prod['precio'] * cantidad
+        
+        self.lista_extras.append({
+            'id_producto': data_prod['id'],
+            'cantidad': cantidad,
+            'precio': data_prod['precio'],
+            'subtotal': subtotal
+        })
+        
+        row = self.view.TW_productos_c.rowCount()
+        self.view.TW_productos_c.insertRow(row)
+        
+        item_desc = QTableWidgetItem(data_prod['nombre'])
+        item_desc.setTextAlignment(Qt.AlignCenter)
+        self.view.TW_productos_c.setItem(row, 0, item_desc)
+        
+        item_cant = QTableWidgetItem(str(cantidad))
+        item_cant.setTextAlignment(Qt.AlignCenter)
+        self.view.TW_productos_c.setItem(row, 1, item_cant)
+        
+        item_sub = QTableWidgetItem(f"{subtotal:.2f}")
+        item_sub.setTextAlignment(Qt.AlignCenter)
+        self.view.TW_productos_c.setItem(row, 2, item_sub)
+        
+        total = sum(item['subtotal'] for item in self.lista_extras)
+        self.view.LE_monto.setText(f"{total:.2f}")
+        
+        self.view.SB_cantidad.setValue(0)
+
     def crear_reserva(self):
         if not self.id_huesped_actual:
             QMessageBox.warning(self.window, "Error", "Busque un huésped primero.")
@@ -133,12 +189,15 @@ class CrearReservaController:
         exito = self.model.crear_reserva(
             self.id_huesped_actual, id_hab, num_huespedes,
             f_in, f_out, monto_float,
-            self.user_data.get('id', 1)                                           
+            self.user_data.get('id', 1),
+            lista_extras=self.lista_extras
         )
+
+        codigo_generado = self.view.LE_id_r.text()
 
         if exito:
             QMessageBox.information(self.window, "✅ Reserva creada",
-                                    "Reserva registrada exitosamente.")
+                                    f"Reserva registrada exitosamente.\n\nCódigo de Reserva: {codigo_generado}")
             self.window.close()
         else:
             QMessageBox.critical(self.window, "❌ Error",

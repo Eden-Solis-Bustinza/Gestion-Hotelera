@@ -61,7 +61,25 @@ class ReservaModel:
                 if conn: conn.close()
         return metodos
 
-    def crear_reserva(self, id_huesped, id_habitacion, num_huespedes, fecha_in, fecha_out, monto, id_usuario):
+    def get_productos(self):
+        conn = self.db.get_connection()
+        productos = []
+        if not conn:
+            return productos
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, nombre, ISNULL(precio, 10.00) FROM PRODUCTO ORDER BY nombre")
+            productos = cursor.fetchall()
+            conn.close()
+        except Exception as e:
+            print(f"Error al obtener productos: {e}")
+            if conn:
+                conn.close()
+        return productos
+
+    def crear_reserva(self, id_huesped, id_habitacion, num_huespedes, fecha_in, fecha_out, monto, id_usuario, lista_extras=None):
+        if lista_extras is None:
+            lista_extras = []
         conn = self.db.get_connection()
         if not conn: return False
         
@@ -69,19 +87,25 @@ class ReservaModel:
             conn.autocommit = False 
             cursor = conn.cursor()
 
-                                                                                                                  
             cursor.execute("SELECT id_estado FROM CAT_ESTADO_RESERVA WHERE nombre = ?", ('Pendiente',))
             res_estado = cursor.fetchone()
             id_estado_reserva = res_estado[0] if res_estado else 1
 
-                                     
             cursor.execute("""
                 INSERT INTO RESERVAS (id_huesped, id_habitacion, fecha_checkin, fecha_checkout, id_estado, nro_huespedes, monto_adelantado, id_usuario_crea)
+                OUTPUT INSERTED.id_reserva
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (id_huesped, id_habitacion, fecha_in, fecha_out, id_estado_reserva, num_huespedes, monto, id_usuario))
+            
+            row = cursor.fetchone()
+            id_reserva = row[0] if row else None
 
-                                                                                                                                          
-                                                                                                                             
+            if id_reserva and lista_extras:
+                for ext in lista_extras:
+                    cursor.execute("""
+                        INSERT INTO CONSUMO_RESERVA (id_reserva, id_producto, cantidad, precio_unitario, subtotal)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (id_reserva, ext['id_producto'], ext['cantidad'], ext['precio'], ext['subtotal']))                                                                                                                              
             
             conn.commit()
             return True

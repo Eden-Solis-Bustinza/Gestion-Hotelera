@@ -114,3 +114,73 @@ class UserModel:
             except Exception as e:
                 print(f"Error al actualizar ultimo_acceso: {e}")
                 if conn: conn.close()
+
+    def get_all_users(self):
+        conn = self.db.get_connection()
+        users = []
+        if conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT u.id_usuario, u.nombre, u.email, r.nombre AS rol_nombre, u.id_rol, u.activo
+                    FROM USUARIOS u
+                    JOIN CAT_ROL r ON u.id_rol = r.id_rol
+                    ORDER BY u.id_usuario
+                """)
+                for row in cursor.fetchall():
+                    users.append({
+                        "id": row[0],
+                        "nombre": row[1],
+                        "email": row[2],
+                        "rol": row[3],
+                        "id_rol": row[4],
+                        "activo": bool(row[5])
+                    })
+                conn.close()
+            except Exception as e:
+                print(f"Error al obtener todos los usuarios: {e}")
+                if conn: conn.close()
+        return users
+
+    def toggle_user_status(self, id_usuario, new_status):
+        conn = self.db.get_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                val = 1 if new_status else 0
+                cursor.execute("UPDATE USUARIOS SET activo = ? WHERE id_usuario = ?", (val, id_usuario))
+                conn.commit()
+                conn.close()
+                return True
+            except Exception as e:
+                print(f"Error al actualizar estado del usuario: {e}")
+                conn.rollback()
+                if conn: conn.close()
+        return False
+
+    def update_user_details_admin(self, id_usuario, nombre, email, id_rol, new_password=None):
+        conn = self.db.get_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                if new_password:
+                    password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                    cursor.execute("""
+                        UPDATE USUARIOS 
+                        SET nombre = ?, email = ?, id_rol = ?, password_hash = ?
+                        WHERE id_usuario = ?
+                    """, (nombre, email.strip().lower(), id_rol, password_hash, id_usuario))
+                else:
+                    cursor.execute("""
+                        UPDATE USUARIOS 
+                        SET nombre = ?, email = ?, id_rol = ?
+                        WHERE id_usuario = ?
+                    """, (nombre, email.strip().lower(), id_rol, id_usuario))
+                conn.commit()
+                conn.close()
+                return True
+            except Exception as e:
+                print(f"Error al actualizar usuario (admin): {e}")
+                conn.rollback()
+                if conn: conn.close()
+        return False

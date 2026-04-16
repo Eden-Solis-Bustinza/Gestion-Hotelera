@@ -134,6 +134,30 @@ class CheckoutController:
         self.monto_adelantado = reserva['monto_adelanto']
         self.view.LE_monto_a.setText(f"{self.monto_adelantado:.2f}")
 
+        self.view.TW_productos.setRowCount(0)
+        self._extras_cargados = []
+        for consumo in reserva.get('consumos', []):
+            self._extras_cargados.append({
+                'id_producto': consumo['id_producto'],
+                'cantidad': consumo['cantidad'],
+                'subtotal': float(consumo['subtotal'])
+            })
+            
+            row = self.view.TW_productos.rowCount()
+            self.view.TW_productos.insertRow(row)
+            
+            item_desc = QtWidgets.QTableWidgetItem(consumo['nombre'])
+            item_desc.setData(QtCore.Qt.UserRole, consumo['id_producto'])                              
+            self.view.TW_productos.setItem(row, 0, item_desc)
+            
+            item_cant = QtWidgets.QTableWidgetItem(str(consumo['cantidad']))
+            item_cant.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.view.TW_productos.setItem(row, 1, item_cant)
+            
+            item_sub = QtWidgets.QTableWidgetItem(f"{consumo['subtotal']:.2f}")
+            item_sub.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            self.view.TW_productos.setItem(row, 2, item_sub)
+
         self.calcular_totales()
         self.view.PB_checkout.setEnabled(True)
 
@@ -310,17 +334,31 @@ class CheckoutController:
         c.line(30, y - 20, ancho - 30, y - 20)
 
         c.setFont("Helvetica", 10)
-        c.drawString(30, y - 40, "Alojamiento / Extras Totales")
-        c.drawString(ancho - 100, y - 40, f"S/. {datos['subtotal']:.2f}")
+        y -= 40
+        productos_det = datos.get('productos_detalle', [])
+        sum_productos = sum(p['subtotal'] for p in productos_det)
+        monto_hab = datos['subtotal'] - sum_productos
         
-        c.line(30, y - 55, ancho - 30, y - 55)
+        c.drawString(30, y, f"Alojamiento ({datos['dias_estancia']} noches)")
+        c.drawString(ancho - 100, y, f"S/. {monto_hab:.2f}")
+        
+        for prod in productos_det:
+            y -= 15
+            c.drawString(30, y, f"{prod['cantidad']}x {prod['nombre']}")
+            c.drawString(ancho - 100, y, f"S/. {prod['subtotal']:.2f}")
+            
+        y -= 15
+        c.line(30, y, ancho - 30, y)
 
         c.setFont("Helvetica-Bold", 11)
-        c.drawString(ancho - 180, y - 75, "TOTAL PAGADO:")
-        c.drawString(ancho - 100, y - 75, f"S/. {datos['total_general']:.2f}")
+        c.drawString(ancho - 180, y - 20, "SUBTOTAL FINAL:")
+        c.drawString(ancho - 100, y - 20, f"S/. {datos['subtotal']:.2f}")
+
+        c.drawString(ancho - 180, y - 40, "TOTAL PAGADO:")
+        c.drawString(ancho - 100, y - 40, f"S/. {datos['total_general']:.2f}")
 
         c.setFont("Helvetica-Oblique", 9)
-        c.drawCentredString(ancho / 2, y - 120, "¡Gracias por su visita y feliz viaje!")
+        c.drawCentredString(ancho / 2, y - 80, "¡Gracias por su visita y feliz viaje!")
 
         c.save()
 
